@@ -18,7 +18,7 @@ class Collection(pd.DataFrame):
     contents of a binder or box, etc."""
     def __init__(self, *args, name=None, **kwargs):
         # Fix columns to the currently in-use card properties
-        kwargs['columns'] = ['Name', 'Set', 'Rarity']
+        kwargs['columns'] = ['Name', 'Cost', 'Set', 'Rarity']
         super().__init__(*args, **kwargs)
         # Needs a name member for certain operations
         self.name = name if name else "Unnamed"
@@ -39,7 +39,7 @@ class Collection(pd.DataFrame):
         """Formats a dictionary of cards as provided by scryfall into a
         Collection object."""
         data = pd.DataFrame.from_dict(data)
-        scrynames = {'name':'Name', 'set':'Set', 'rarity':'Rarity'}
+        scrynames = {'name':'Name', 'mana_cost':'Cost', 'set':'Set', 'rarity':'Rarity'}
         data = data[list(scrynames.keys())]
         data.rename(columns=scrynames, inplace=True)
         # Rarity column needs to be remapped to one-letter codes

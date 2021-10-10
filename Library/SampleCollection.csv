@@ -1,7 +1,7 @@
-Name;Set;Rarity
-Duress;STA;U
-Duress;M21;C
-Mindslicer;9ED;R
-Needle Storm;TMP;U
-Rule of Law;MRD;R
-Time Warp;M10;M
+Name;Cost;Set;Rarity
+Duress;{B};STA;U
+Duress;{B};M21;C
+Mindslicer;{2}{B}{B};9ED;R
+Needle Storm;{2}{G};TMP;U
+Rule of Law;{2}{W};MRD;R
+Time Warp;{3}{U}{U};M10;M
