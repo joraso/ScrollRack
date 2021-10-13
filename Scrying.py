@@ -11,6 +11,10 @@ pulling card information from their online database.
 import json, time, requests
 from Collection import Collection
 
+class SearchPortal:
+    """Generic search engine object for inerfacing with web-based M:tg
+    database APIs"""
+
 def ScryfallRequest(uri, **kwargs):
     """Makes a request from Scryfall's API at the specified uri, and returns
     the results as a dictionary. Any keywords included here are passed to 
