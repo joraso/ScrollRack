@@ -38,9 +38,8 @@ class CollectionView(QtWidgets.QTableView):
         super().__init__(*args, **kwargs)
         # create and set the collection model.
         self.setModel(CollectionModel(collection))
-        # Set selection behavior to multiple whole rows at a time
+        # Set selection behavior to whole rows at a time
         self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
-        self.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
         # Set the view column widths according to defaults
         columns = self.model().collection.columns
         for c in range(len(columns)):
