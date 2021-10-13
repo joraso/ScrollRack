@@ -1,7 +1,12 @@
-Name;Set;Rarity
-Duress;STA;U
-Duress;M21;C
-Mindslicer;9ED;R
-Needle Storm;TMP;U
-Rule of Law;MRD;R
-Time Warp;M10;M
+Name;Cost;Set;Rarity
+Duress;{B};STA;U
+Duress;{B};M21;C
+Mindslicer;{2}{B}{B};9ED;R
+Needle Storm;{2}{G};TMP;U
+Rule of Law;{2}{W};MRD;R
+Time Warp;{3}{U}{U};M10;M
+Arcum's Astrolabe;{S};MH1;C
+Runes of the Deus;{4}{R/G};SHM;C
+Kozilek, the Great Distortion;{8}{C}{C};OGW;M
+Gitaxian Probe;{U/P};NPH;C
+Beseech the Queen;{2/B}{2/B}{2/B};HOP;U

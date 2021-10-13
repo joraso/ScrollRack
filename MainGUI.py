@@ -9,7 +9,7 @@ collections as well as the main window.
 """
 
 from Collection import Collection
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore, QtGui, QtSvg
 
 class CollectionModel(QtCore.QAbstractTableModel):
     """The model for GUI interface with a collection object."""
@@ -17,8 +17,13 @@ class CollectionModel(QtCore.QAbstractTableModel):
         super().__init__(*args, **kwargs)
         self.collection = collection
     def data(self, index, role):
-        if role == QtCore.Qt.DisplayRole:
+        # By defaul display the contents of the collection as a string
+        if role == QtCore.Qt.DisplayRole and index.column() != 1:
             return str(self.collection.iloc[index.row(), index.column()])
+        # For the 'Cost' column, include no display role, and instead put the
+        # cost image as decoation role.
+        if role == QtCore.Qt.DecorationRole and index.column() == 1:
+            return self.parseManaCost(index)
     def rowCount(self, index):
         return len(self.collection)
     def columnCount(self, index):
@@ -29,11 +34,32 @@ class CollectionModel(QtCore.QAbstractTableModel):
             return self.collection.columns[section]
         # In every other case, return the parent call
         return super().headerData(section, orientation, role)
+    # Nonstandard functions ===================================================
+    def parseManaCost(self, index, symbol_size=15):
+        """Retrieves the mana cost from the card at (index) and returns a
+        QImage of the cost to display."""
+        # Retriving and parsing the mana cost string into a list of filenames
+        cost_string = self.collection.iloc[index.row(), 1]
+        cost_string = cost_string.replace('/','') # for hybrid/phyrex. mana
+        symbols = cost_string[1:-1].split('}{')
+        # Generate the cost image and painter object
+        imgformat = QtGui.QImage.Format_ARGB32
+        image = QtGui.QImage(symbol_size*len(symbols), symbol_size, imgformat)
+        image.fill(0) # Fills in a white background
+        painter = QtGui.QPainter(image); loc=0
+        # render symbols from their individual files and add them to the image
+        for sym in symbols:
+            renderer = QtSvg.QSvgRenderer(f'images/mana-symbols/{sym}.svg')
+            area = QtCore.QRectF(loc, 0, symbol_size, symbol_size)
+            renderer.render(painter, area)
+            loc += symbol_size
+        return image
+        
         
 class CollectionView(QtWidgets.QTableView):
     """The view object for GUI interface with a model/collection."""
     # Class variable that dictates the appropriate width of columns
-    columnWidths = {"Name":200, "Set":50, "Rarity":50}
+    columnWidths = {"Name":200, "Cost":60, "Set":50, "Rarity":50}
     def __init__(self, collection, *args, fname=None, **kwargs):
         super().__init__(*args, **kwargs)
         # create and set the collection model.
