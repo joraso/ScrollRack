@@ -9,13 +9,8 @@ pulling card information from their online database.
 """
 
 import json, time, requests
-from Collection import Collection
 
-class SearchPortal:
-    """Generic search engine object for inerfacing with web-based M:tg
-    database APIs."""
-    
-class Scryfall(SearchPortal):
+class Scryfall:
     """Search engine that connects to https://scryfall.com/ for card 
     information and searches."""
     def __init__(self):
@@ -48,10 +43,10 @@ class Scryfall(SearchPortal):
         if ('next_page' in js.keys()):
             print("Warning: Some cards were not pulled, maxcards reached.")
         # Format the restults into a collection:
-        return Collection.from_scryfall(data)    
+        return data
         
 if __name__ == '__main__':
     
     portal = Scryfall()
-    test = portal.search('!"Intet, the Dreamer" include:extras')
-    test2 = portal.search('t:goblin lang:en')
+#    test = portal.search('!"Intet, the Dreamer" include:extras')
+    test = portal.search('t:ouphe lang:en')

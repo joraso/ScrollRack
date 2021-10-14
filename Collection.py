@@ -10,6 +10,7 @@ manipulating lists of M:tG cards.
 """
 
 import pandas as pd
+from Scrying import Scryfall
 
 # See https://pandas.pydata.org/docs/reference/frame.html
 class Collection(pd.DataFrame):
@@ -35,9 +36,12 @@ class Collection(pd.DataFrame):
         
     # Format converters =======================================================
     @classmethod
-    def from_scryfall(cls, data, name="Scryfall results"):
+    def from_search(cls, query, name="Scryfall results"):
         """Formats a dictionary of cards as provided by scryfall into a
         Collection object."""
+        # Perform the search using the Scryfall portal
+        portal = Scryfall()
+        data = portal.search(query)
         data = pd.DataFrame.from_dict(data)
         scrynames = {'name':'Name', 'mana_cost':'Cost', 'set':'Set', 'rarity':'Rarity'}
         data = data[list(scrynames.keys())]
@@ -51,5 +55,6 @@ class Collection(pd.DataFrame):
 
 if __name__ == "__main__":
     
-    test = Collection(name="SampleCollection")
-    test.load()
+#    test = Collection(name="SampleCollection")
+#    test.load()
+    test = Collection.from_search("t:ouphe")
