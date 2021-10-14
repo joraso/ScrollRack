@@ -2,8 +2,8 @@
 """
 Created on Sat Oct  2 12:52:09 2021
 
-This module contains the functions used to interface with Scryfall's API for
-pulling card information from their online database.
+This module contains the ScryfallPortal object used by Collections to interface
+with Scryfall's API and pull card information from their online database.
 
 @author: Joe Raso
 """
@@ -11,16 +11,16 @@ pulling card information from their online database.
 import json, time, requests
 import pandas as pd
 
-class Scryfall:
-    """Search engine that connects to https://scryfall.com/ for card 
-    information and searches."""
+class ScryfallPortal:
+    """Search engine that connects to the Scryfall API (https://scryfall.com/)
+    to retrieve card information and searches."""
     def __init__(self):
         self.searchpath = 'https://api.scryfall.com/cards/search'
     def format_result(self, data):
         """Formats a the results of a Scryfall search (a json list of
         dictionaries) into a Collection-compatible DataFrame."""
         data = pd.DataFrame.from_dict(data)
-        # Retrieve and rename the columns expected by the colection object.
+        # Retrieve and rename the columns expected by the collection object.
         scrynames = {'name':'Name', 'mana_cost':'Cost', 'set':'Set',
             'rarity':'Rarity'}
         data = data[list(scrynames.keys())]
@@ -42,7 +42,7 @@ class Scryfall:
         req = requests.get(uri, **kwargs)
         return req.json()
     def search(self, query, maxcards=1000):
-        """Returns the results of a Scryfall Search. For query syntax see
+        """Returns the results of a Scryfall search. For query syntax see
         https://scryfall.com/docs/syntax. The maxcards keyword is used to
         ensure that the amount of data pulled does not overload memory."""
         # Pull the first page of search results from the scryfall API:
@@ -57,8 +57,8 @@ class Scryfall:
             data += js['data']; ncards = len(data)
         # Throw a warning if the above loop terminated due maxing out cards:
         if ('next_page' in js.keys()):
-            print("Warning: Some cards were not pulled, maxcards reached.")
-        # Format the restults into a collection:
+            print("Warning: Some cards were not pulled --- maxcards reached.")
+        # Format the restults into to pass to the Collection:
         return self.format_result(data)
         
 if __name__ == '__main__':

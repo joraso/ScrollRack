@@ -10,13 +10,12 @@ manipulating lists of M:tG cards.
 """
 
 import pandas as pd
-from Scrying import Scryfall
+from Search import ScryfallPortal
 
 # See https://pandas.pydata.org/docs/reference/frame.html
 class Collection(pd.DataFrame):
     """The core object of ScrollRack - a collection is a named list of cards,
-    presumed to be physically owned by the user, and may represent a deck, the
-    contents of a binder or box, etc."""
+    that may represent a deck, the contents of a binder or box, etc."""
     def __init__(self, *args, name=None, **kwargs):
         # Fix columns to the currently in-use card properties
         kwargs['columns'] = ['Name', 'Cost', 'Set', 'Rarity']
@@ -34,13 +33,13 @@ class Collection(pd.DataFrame):
         fpath = 'Library/'+self.name+'.csv'
         self.to_csv(fpath, index=False, sep=';')
         
-    # Format converters =======================================================
+    # Scryfall Connectors =====================================================
     @classmethod
     def from_search(cls, query, name="Search results"):
-        """Creates a Collection from the results of a web search."""
-        # Perform the search using the Scryfall portal
-        portal = Scryfall()
-        data = portal.search(query)
+        """Creates a Collection from the results of a Scryfall search with the
+        given query. For query syntax see https://scryfall.com/docs/syntax."""
+        # Perform the search using the Scryfall portal object.
+        portal = ScryfallPortal(); data = portal.search(query)
         return cls(data, name=name)
 
 if __name__ == "__main__":
