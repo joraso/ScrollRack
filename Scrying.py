@@ -9,12 +9,28 @@ pulling card information from their online database.
 """
 
 import json, time, requests
+import pandas as pd
 
 class Scryfall:
     """Search engine that connects to https://scryfall.com/ for card 
     information and searches."""
     def __init__(self):
         self.searchpath = 'https://api.scryfall.com/cards/search'
+    def format_result(self, data):
+        """Formats a the results of a Scryfall search (a json list of
+        dictionaries) into a Collection-compatible DataFrame."""
+        data = pd.DataFrame.from_dict(data)
+        # Retrieve and rename the columns expected by the colection object.
+        scrynames = {'name':'Name', 'mana_cost':'Cost', 'set':'Set',
+            'rarity':'Rarity'}
+        data = data[list(scrynames.keys())]
+        data.rename(columns=scrynames, inplace=True)
+        # Rarity column needs to be remapped to one-letter codes
+        rarities = {'mythic':'M', 'rare':'R', 'uncommon':'U', 'common':'C'}
+        data.replace({'Rarity':rarities}, inplace=True)
+        # Set abbreviations should be capatalized
+        data['Set'] = data['Set'].apply(str.upper)
+        return data
     def request(self, uri, **kwargs):
         """Makes a request from Scryfall's API at the specified uri, and
         returns the results as a dictionary. Any keywords included here are
@@ -43,10 +59,9 @@ class Scryfall:
         if ('next_page' in js.keys()):
             print("Warning: Some cards were not pulled, maxcards reached.")
         # Format the restults into a collection:
-        return data
+        return self.format_result(data)
         
 if __name__ == '__main__':
     
     portal = Scryfall()
-#    test = portal.search('!"Intet, the Dreamer" include:extras')
-    test = portal.search('t:ouphe lang:en')
+    test = portal.search('!"Intet, the Dreamer" unique:prints')

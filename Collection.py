@@ -36,21 +36,11 @@ class Collection(pd.DataFrame):
         
     # Format converters =======================================================
     @classmethod
-    def from_search(cls, query, name="Scryfall results"):
-        """Formats a dictionary of cards as provided by scryfall into a
-        Collection object."""
+    def from_search(cls, query, name="Search results"):
+        """Creates a Collection from the results of a web search."""
         # Perform the search using the Scryfall portal
         portal = Scryfall()
         data = portal.search(query)
-        data = pd.DataFrame.from_dict(data)
-        scrynames = {'name':'Name', 'mana_cost':'Cost', 'set':'Set', 'rarity':'Rarity'}
-        data = data[list(scrynames.keys())]
-        data.rename(columns=scrynames, inplace=True)
-        # Rarity column needs to be remapped to one-letter codes
-        rarities = {'mythic':'M', 'rare':'R', 'uncommon':'U', 'common':'C'}
-        data.replace({'Rarity':rarities}, inplace=True)
-        # Set abbreviations should be capatalized
-        data['Set'] = data['Set'].apply(str.upper)
         return cls(data, name=name)
 
 if __name__ == "__main__":
