@@ -86,12 +86,37 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(self.tabs)
         # Add the top tool bar.
         self.addToolBar(self.toolBar())
+        self.addDockWidget(QtCore.Qt.TopDockWidgetArea, self.searchBar())
     def toolBar(self):
         """Initializes the toolbar at the top of the window."""
         self.toolbar = QtWidgets.QToolBar()
         self.openButton = self.toolbar.addAction("Open", self.openTab)
         self.newButton = self.toolbar.addAction("New", self.newTab)
+        self.searchButton = self.toolbar.addAction("Scryfall",
+            lambda: self.searchbar.setHidden(False))
         return self.toolbar
+    def searchBar(self):
+        """Initializes a search bar at the bottom of the window."""
+        layout = QtWidgets.QHBoxLayout()
+        self.searchfield = QtWidgets.QLineEdit()
+        self.searchfield.returnPressed.connect(self.openSearch)
+        layout.addWidget(self.searchfield)
+        searchbutton = QtWidgets.QPushButton("Search")
+        searchbutton.clicked.connect(self.openSearch)
+        layout.addWidget(searchbutton)
+        searchwidget = QtWidgets.QWidget()
+        searchwidget.setLayout(layout)
+        self.searchbar = QtWidgets.QDockWidget()
+        self.searchbar.setWidget(searchwidget)
+        self.searchbar.setWindowTitle("Enter Scryfall query:")
+        # Default to hidden upon initialization
+        self.searchbar.setHidden(True)
+        return self.searchbar
+    def openSearch(self):
+        """Opens a new collection tab containing search results"""
+        view = CollectionView(Collection.from_search(self.searchfield.text()))
+        self.tabs.addTab(view, view.model().collection.name)
+        self.searchbar.setHidden(True) # re-hide the search bar
     def newTab(self):
         """Opens a blank collection tab."""
         # Must initialize a blank collection to pass to the model/view
