@@ -16,13 +16,15 @@ class CollectionModel(QtCore.QAbstractTableModel):
     def __init__(self, collection, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.collection = collection
+        # Auto-find the index of columns the model needs to treat specially
+        self.manacolumn = self.collection.columns.get_loc('Cost')
     def data(self, index, role):
         # By defaul display the contents of the collection as a string
-        if role == QtCore.Qt.DisplayRole and index.column() != 1:
+        if role==QtCore.Qt.DisplayRole and index.column()!=self.manacolumn:
             return str(self.collection.iloc[index.row(), index.column()])
         # For the 'Cost' column, include no display role, and instead put the
         # cost image as decoation role.
-        if role == QtCore.Qt.DecorationRole and index.column() == 1:
+        if role==QtCore.Qt.DecorationRole and index.column()==self.manacolumn:
             return self.parseManaCost(index)
     def rowCount(self, index):
         return len(self.collection)
@@ -39,7 +41,7 @@ class CollectionModel(QtCore.QAbstractTableModel):
         """Retrieves the mana cost from the card at (index) and returns a
         QImage of the cost to display."""
         # Retriving and parsing the mana cost string into a list of filenames
-        cost_string = self.collection.iloc[index.row(), 1]
+        cost_string = self.collection.iloc[index.row(), self.manacolumn]
         cost_string = cost_string.replace('/','') # for hybrid/phyrex. mana
         symbols = cost_string[1:-1].split('}{')
         # Generate the cost image and painter object
@@ -59,7 +61,7 @@ class CollectionModel(QtCore.QAbstractTableModel):
 class CollectionView(QtWidgets.QTableView):
     """The view object for GUI interface with a model/collection."""
     # Class variable that dictates the appropriate width of columns
-    columnWidths = {"Name":200, "Cost":60, "Set":50, "Rarity":50}
+    columnWidths = {"Sel": 10, "Name":200, "Cost":60, "Set":50, "Rarity":50}
     def __init__(self, collection, *args, fname=None, **kwargs):
         super().__init__(*args, **kwargs)
         # create and set the collection model.
