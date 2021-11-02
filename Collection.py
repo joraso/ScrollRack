@@ -18,10 +18,12 @@ class Collection(pd.DataFrame):
     that may represent a deck, the contents of a binder or box, etc."""
     def __init__(self, *args, name=None, **kwargs):
         # Fix columns to the currently in-use card properties
-        kwargs['columns'] = ['Name', 'Cost', 'Set', 'Rarity']
+        kwargs['columns'] = ['Sel', 'Name', 'Cost', 'Set', 'Rarity']
         super().__init__(*args, **kwargs)
         # Needs a name member for certain operations
         self.name = name if name else "Unnamed"
+        # set column indicating selection status to False
+        self.Sel = False
     def load(self):
         """Loads the collection data from the Library folder."""
         fpath = 'Library/'+self.name+'.csv'
@@ -30,8 +32,10 @@ class Collection(pd.DataFrame):
     def save(self):
         """Saves the collection as a ';' delimited csv file in the Library
         folder under the name of the collection."""
+        # Drop selection status column before saving
+        data = self.drop(columns=['Sel'])
         fpath = 'Library/'+self.name+'.csv'
-        self.to_csv(fpath, index=False, sep=';')
+        data.to_csv(fpath, index=False, sep=';')
         
     # Scryfall Connectors =====================================================
     @classmethod
