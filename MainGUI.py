@@ -140,6 +140,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.newButton = self.toolbar.addAction("New", self.newTab)
         self.searchButton = self.toolbar.addAction("Scryfall",
             lambda: self.searchbar.setHidden(False))
+        self.dropButton = self.toolbar.addAction("Drop", self.dropSelected)
         return self.toolbar
     def searchBar(self):
         """Initializes a search bar at the bottom of the window."""
@@ -182,6 +183,10 @@ class MainWindow(QtWidgets.QMainWindow):
     def closeTab(self, currentIndex):
         """Closes a tab."""
         self.tabs.removeTab(currentIndex)
+    def dropSelected(self):
+        """Drops the selected cards from the current Collection"""
+        mod = self.tabs.widget(self.tabs.currentIndex()).model()
+        mod.collection.drop_selected(); mod.layoutChanged.emit()
         
 if __name__ == '__main__':
     
