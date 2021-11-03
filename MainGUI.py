@@ -141,6 +141,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.searchButton = self.toolbar.addAction("Scryfall",
             lambda: self.searchbar.setHidden(False))
         self.dropButton = self.toolbar.addAction("Drop", self.dropSelected)
+        # Adding the dropdown menu for Copy to
+        self.copytoMenu = QtWidgets.QMenu("Copy To")
+        self.copytoMenu.aboutToShow.connect(self.generateCopyToMenu)
+        self.toolbar.addAction(self.copytoMenu.menuAction())
         return self.toolbar
     def searchBar(self):
         """Initializes a search bar at the bottom of the window."""
@@ -184,9 +188,31 @@ class MainWindow(QtWidgets.QMainWindow):
         """Closes a tab."""
         self.tabs.removeTab(currentIndex)
     def dropSelected(self):
-        """Drops the selected cards from the current Collection"""
+        """Drops the selected cards from the current Collection."""
         mod = self.tabs.widget(self.tabs.currentIndex()).model()
         mod.collection.drop_selected(); mod.layoutChanged.emit()
+    def generateCopyToMenu(self):
+        """Generates the dropdown menu of currently open tabs to copy to."""
+        self.copytoMenu.clear() # Clear the current menu
+        sourceIndex = self.tabs.currentIndex()
+        def generate_copyto(destIndex):
+            # Generates a copy to function for each source/destination.
+            source = self.tabs.widget(sourceIndex).model()
+            dest = self.tabs.widget(destIndex).model()
+            def copyto():
+                # Perform the copy to operation
+                cards = source.collection.copy_selected()
+                dest.collection.add_cards(cards)
+                # Update the view of both models
+                dest.layoutChanged.emit(); source.layoutChanged.emit()
+            return copyto
+        num = self.tabs.count() # then number of tabs open
+        for i in range(num):
+            if i != sourceIndex:
+                tabname = self.tabs.widget(i).model().collection.name # the string name
+                self.copytoMenu.addAction(tabname, generate_copyto(i))
+        self.copytoMenu.addSeparator()
+        self.copytoMenu.addAction("Here", generate_copyto(sourceIndex))
         
 if __name__ == '__main__':
     
