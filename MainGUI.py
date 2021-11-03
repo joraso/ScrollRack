@@ -17,15 +17,27 @@ class CollectionModel(QtCore.QAbstractTableModel):
         super().__init__(*args, **kwargs)
         self.collection = collection
         # Auto-find the index of columns the model needs to treat specially
+        self.selectioncolumn = self.collection.columns.get_loc('Sel')
         self.manacolumn = self.collection.columns.get_loc('Cost')
+        # Keep a master list of the editable columns
+        self.editable = [self.selectioncolumn]
+        
+    # Mandatory reimplementations for a table model ===========================
     def data(self, index, role):
         # By defaul display the contents of the collection as a string
-        if role==QtCore.Qt.DisplayRole and index.column()!=self.manacolumn:
+        if role==QtCore.Qt.DisplayRole and index.column()!=self.manacolumn \
+            and index.column()!=self.selectioncolumn:
             return str(self.collection.iloc[index.row(), index.column()])
         # For the 'Cost' column, include no display role, and instead put the
         # cost image as decoation role.
         if role==QtCore.Qt.DecorationRole and index.column()==self.manacolumn:
             return self.parseManaCost(index)
+        # The selelection column must have a checked state
+        if role==QtCore.Qt.CheckStateRole and \
+            index.column()==self.selectioncolumn:
+            if self.collection.iloc[index.row(), index.column()]:
+                return QtCore.Qt.Checked
+            else: return QtCore.Qt.Unchecked
     def rowCount(self, index):
         return len(self.collection)
     def columnCount(self, index):
@@ -36,6 +48,24 @@ class CollectionModel(QtCore.QAbstractTableModel):
             return self.collection.columns[section]
         # In every other case, return the parent call
         return super().headerData(section, orientation, role)
+        
+    # Mandatory reimplementations for an editable table =======================
+    def flags(self, index):
+        # The editable columns need to be flagged as such
+        if index.column() in self.editable:
+            return (super().flags(index) | QtCore.Qt.ItemIsEditable)
+        # Otherwise go to the parent definition
+        else: return super().flags(index)
+    def setData(self, index, value, role):
+        # if the index is the selection column, toggle it's value
+        if index.column() == self.selectioncolumn:
+            if value==0:
+                self.collection.iloc[index.row(),index.column()] = False
+            else: self.collection.iloc[index.row(),index.column()] = True
+            self.layoutChanged.emit()
+            return True
+        return False
+            
     # Nonstandard functions ===================================================
     def parseManaCost(self, index, symbol_size=15):
         """Retrieves the mana cost from the card at (index) and returns a
@@ -61,18 +91,32 @@ class CollectionModel(QtCore.QAbstractTableModel):
 class CollectionView(QtWidgets.QTableView):
     """The view object for GUI interface with a model/collection."""
     # Class variable that dictates the appropriate width of columns
-    columnWidths = {"Sel": 10, "Name":200, "Cost":60, "Set":50, "Rarity":50}
+    columnWidths = {"Sel":22, "Name":200, "Cost":60, "Set":50, "Rarity":50}
     def __init__(self, collection, *args, fname=None, **kwargs):
         super().__init__(*args, **kwargs)
         # create and set the collection model.
         self.setModel(CollectionModel(collection))
         # Set selection behavior to whole rows at a time
         self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+        # Set the minimum horizontal section size to small
+        self.horizontalHeader().setMinimumSectionSize(20)
         # Set the view column widths according to defaults
         columns = self.model().collection.columns
         for c in range(len(columns)):
             if columns[c] in self.columnWidths.keys():
                 self.setColumnWidth(c, self.columnWidths[columns[c]])
+        # Connect the on click functionality
+        self.clicked.connect(self.onClick)
+    def onClick(self):
+        """Defines what happens when the table is clicked."""
+        index = self.selectionModel().currentIndex()
+#        print(f"{index.row()}, {index.column()}")
+        if index.column() == 0:
+            if self.model().collection.iloc[index.row(), index.column()]:
+                self.model().setData(index, 0, QtCore.Qt.CheckStateRole)
+            else: self.model().setData(index, 1, QtCore.Qt.CheckStateRole)
+            
+
         
 class MainWindow(QtWidgets.QMainWindow):
     """The main GUI window. Collections are opened in tabs, with a toolbar
@@ -146,4 +190,7 @@ if __name__ == '__main__':
     win.show()
     app.exec()
     
-    
+    # After closing the window, grab a few handles for debugging
+    view = win.tabs.widget(0)
+    mod = view.model()
+    col = mod.collection
