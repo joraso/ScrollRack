@@ -36,6 +36,17 @@ class Collection(pd.DataFrame):
         data = self.drop(columns=['Sel'])
         fpath = 'Library/'+self.name+'.csv'
         data.to_csv(fpath, index=False, sep=';')
+    def copy_selected(self):
+        """Returns a Collection containing a copy of the cards selected."""
+        data = self[self["Sel"]==True].copy()
+        return Collection(data) # re-initialize as a collection
+    def drop_selected(self):
+        """Drops the selected cards from the Collection in place."""
+        self.drop(self.index[self["Sel"]==True], inplace=True)
+    def add_cards(self, collection):
+        """Adds the cards from another Collection to this one."""
+        combined = pd.concat([self, collection], axis=0).reset_index()
+        self.__init__(combined, name=self.name)
         
     # Scryfall Connectors =====================================================
     @classmethod
@@ -48,6 +59,10 @@ class Collection(pd.DataFrame):
 
 if __name__ == "__main__":
     
-#    test = Collection(name="SampleCollection")
-#    test.load()
-    test = Collection.from_search("t:ouphe")
+    test = Collection(name="SampleCollection")
+    test.load()
+    test.iloc[3:7,0]=True
+    test2 = test.copy_selected()
+    test.drop_selected()
+    test3 = Collection.from_search("t:ouphe")
+    test.add_cards(test3)
