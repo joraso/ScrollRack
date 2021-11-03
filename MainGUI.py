@@ -141,10 +141,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.searchButton = self.toolbar.addAction("Scryfall",
             lambda: self.searchbar.setHidden(False))
         self.dropButton = self.toolbar.addAction("Drop", self.dropSelected)
-        # Adding the dropdown menu for Copy to
+        # Adding the dropdown menu for 'Copy To' and 'Move To'
         self.copytoMenu = QtWidgets.QMenu("Copy To")
         self.copytoMenu.aboutToShow.connect(self.generateCopyToMenu)
         self.toolbar.addAction(self.copytoMenu.menuAction())
+        self.movetoMenu = QtWidgets.QMenu("Move To")
+        self.movetoMenu.aboutToShow.connect(self.generateMoveToMenu)
+        self.toolbar.addAction(self.movetoMenu.menuAction())
         return self.toolbar
     def searchBar(self):
         """Initializes a search bar at the bottom of the window."""
@@ -192,7 +195,8 @@ class MainWindow(QtWidgets.QMainWindow):
         mod = self.tabs.widget(self.tabs.currentIndex()).model()
         mod.collection.drop_selected(); mod.layoutChanged.emit()
     def generateCopyToMenu(self):
-        """Generates the dropdown menu of currently open tabs to copy to."""
+        """Generates the dropdown menu of currently open tabs to copy selected
+        cards to."""
         self.copytoMenu.clear() # Clear the current menu
         sourceIndex = self.tabs.currentIndex()
         def generate_copyto(destIndex):
@@ -209,10 +213,35 @@ class MainWindow(QtWidgets.QMainWindow):
         num = self.tabs.count() # then number of tabs open
         for i in range(num):
             if i != sourceIndex:
-                tabname = self.tabs.widget(i).model().collection.name # the string name
+                tabname = self.tabs.widget(i).model().collection.name
                 self.copytoMenu.addAction(tabname, generate_copyto(i))
         self.copytoMenu.addSeparator()
         self.copytoMenu.addAction("Here", generate_copyto(sourceIndex))
+    def generateMoveToMenu(self):
+        """Generates the dropdown menu of currently open tabs to move selected
+        cards to."""
+        self.movetoMenu.clear() # Clear the current menu
+        sourceIndex = self.tabs.currentIndex()
+        def generate_moveto(destIndex):
+            # Generates a move to function for each source/destination.
+            source = self.tabs.widget(sourceIndex).model()
+            dest = self.tabs.widget(destIndex).model()
+            def moveto():
+                # Perform the move to operation
+                cards = source.collection.copy_selected()
+                dest.collection.add_cards(cards)
+                # The difference between copy and move
+                source.collection.drop_selected() 
+                # Update the view of both models
+                dest.layoutChanged.emit(); source.layoutChanged.emit()
+            return moveto
+        num = self.tabs.count() # then number of tabs open
+        # Note: 'move to' provides no option to move to the source list
+        for i in range(num):
+            if i != sourceIndex:
+                tabname = self.tabs.widget(i).model().collection.name
+                self.movetoMenu.addAction(tabname, generate_moveto(i))
+        
         
 if __name__ == '__main__':
     
