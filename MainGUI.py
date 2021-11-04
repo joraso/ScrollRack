@@ -43,11 +43,13 @@ class CollectionModel(QtCore.QAbstractTableModel):
         return len(self.collection.columns)
     def headerData(self, section, orientation, role=QtCore.Qt.DisplayRole):
         # Display the column names in the horizontal header
-        if orientation == QtCore.Qt.Horizontal and \
-            role == QtCore.Qt.DisplayRole:
-            return self.collection.columns[section]
-        # In every other case, return the parent call
-        return super().headerData(section, orientation, role)
+        if orientation == QtCore.Qt.Horizontal:
+            if section == self.selectioncolumn:
+                if role == QtCore.Qt.CheckStateRole:
+                    return QtCore.Qt.Checked
+            elif role == QtCore.Qt.DisplayRole:
+                return self.collection.columns[section]
+        # Note: no vertical header - it's ugly
         
     # Mandatory reimplementations for an editable table =======================
     def flags(self, index):
@@ -122,8 +124,8 @@ class MainWindow(QtWidgets.QMainWindow):
     along the top of the window for navigation."""
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.setWindowTitle("Scroll Rack")
-        self.setGeometry(100,100,1000,500)
+        self.setWindowTitle("ScrollRack")
+        self.setGeometry(100,100,800,500)
         # Setting up the tab space in the central window
         self.tabs = QtWidgets.QTabWidget()
         self.tabs.setTabsClosable(True)
@@ -141,6 +143,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.toolbar.addAction("New", self.newTab)
         self.toolbar.addAction("Scryfall", lambda:
             self.searchbar.setHidden(False))
+        self.toolbar.addSeparator()
         self.toolbar.addAction("Drop", self.dropSelected)
         # Adding the dropdown menu for 'Copy To' and 'Move To'
         self.copytoMenu = QtWidgets.QMenu("Copy To")
