@@ -143,6 +143,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.toolbar.addAction("New", self.newTab)
         self.toolbar.addAction("Scryfall", lambda:
             self.searchbar.setHidden(False))
+        self.toolbar.addAction("Save", self.saveTab)
+        self.toolbar.addAction("Save as", self.saveAsTab)
         self.toolbar.addSeparator()
         self.toolbar.addAction("Drop", self.dropSelected)
         # Adding the dropdown menu for 'Copy To' and 'Move To'
@@ -176,7 +178,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # Add the seachbar to the main window
         self.addDockWidget(QtCore.Qt.TopDockWidgetArea, self.searchbar)
     
-    # Tab manipulation functions ==============================================
+    # Tab/file manipulation functions =========================================
     def openSearch(self):
         """Opens a new collection tab containing search results."""
         view = CollectionView(Collection.from_search(self.searchfield.text()))
@@ -201,6 +203,29 @@ class MainWindow(QtWidgets.QMainWindow):
     def closeTab(self, currentIndex):
         """Closes a tab."""
         self.tabs.removeTab(currentIndex)
+    def saveTab(self):
+        """Saves the currently selected collection to file if it has an an
+        associated file path. Otherwise prompts 'Save As'."""
+        thisTab = self.tabs.currentIndex()
+        # Only do something if the focus is currently on a tab
+        if thisTab > -1:
+            collection = self.tabs.widget(thisTab).model().collection
+            if collection.fpath: collection.save()
+            else: self.saveAsTab()
+    def saveAsTab(self):
+        """Saves the currently selected collection to file."""
+        thisTab = self.tabs.currentIndex()
+        # Only do something if the focus is currently on a tab
+        if thisTab > -1:
+            collection = self.tabs.widget(thisTab).model().collection
+            fpath_tuple = QtWidgets.QFileDialog.getSaveFileName(
+                caption="Save As", directory=f"Library/{collection.name}.csv")
+            # Proceed to saving if a filepath was specified
+            if fpath_tuple[0]:
+                collection.save(fpath_tuple[0])
+                # Update the tab with the newly saved collection name
+                self.tabs.setTabText(thisTab, collection.name)
+        
         
     # Collection editing functionalities ======================================
     def dropSelected(self):
