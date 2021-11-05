@@ -40,7 +40,7 @@ class Collection(pd.DataFrame):
     def add_cards(self, collection):
         """Adds the cards from another Collection to this one."""
         combined = pd.concat([self, collection], axis=0).reset_index()
-        self.__init__(combined, name=self.name)
+        self.__init__(combined, fpath=self.fpath)
         
     # Save/load functionality =================================================
     def save(self, fpath=None):
@@ -83,9 +83,9 @@ class Collection(pd.DataFrame):
 
 if __name__ == "__main__":
     
-#    test = Collection.from_file("Library/SampleCollection.csv")
-#    test.iloc[3:7,0]=True
-#    test2 = test.copy_selected()
-#    test.drop_selected()
+    test = Collection.from_file("Library/SampleCollection.csv")
+    test.iloc[3:7,0]=True
+    test2 = test.copy_selected()
+    test.drop_selected()
     test3 = Collection.from_search("t:ouphe")
-#    test.add_cards(test3)
+    test3.save(fpath="Library/Ouphe.csv")
