@@ -191,13 +191,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.tabs.addTab(view, view.model().collection.name)
     def openTab(self):
         """Opens a new tab with a collection from file."""
-        fpath_tuple = QtWidgets.QFileDialog.getOpenFileName()
+        fpath_tuple = QtWidgets.QFileDialog.getOpenFileName(
+            directory='Library/')
         if fpath_tuple[0]:
-#            # Note that the collection model expects a name without the 
-#            # file suffix, so we have to strip that out
-#            name = fpath_tuple[0].split('/')[-1][:-4]
             collection = Collection.from_file(fpath_tuple[0])
-#            collection.load()
             view = CollectionView(collection)
             self.tabs.addTab(view, collection.name)
     def closeTab(self, currentIndex):
