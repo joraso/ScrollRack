@@ -93,7 +93,8 @@ class CollectionModel(QtCore.QAbstractTableModel):
 class CollectionView(QtWidgets.QTableView):
     """The view object for GUI interface with a model/collection."""
     # Class variable that dictates the appropriate width of columns
-    columnWidths = {"Sel":22, "Name":200, "Cost":60, "Set":50, "Rarity":50}
+    columnWidths = {"Sel":22, "Name":200, "Cost":60, "Set":50, "Rarity":50,
+                    "MV":50, "Color":50, "Released":100}
     def __init__(self, collection, *args, fname=None, **kwargs):
         super().__init__(*args, **kwargs)
         # create and set the collection model.

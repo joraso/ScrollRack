@@ -18,7 +18,8 @@ class Collection(pd.DataFrame):
     that may represent a deck, the contents of a binder or box, etc."""
     def __init__(self, *args, fpath=None, **kwargs):
         # Fix columns to the currently in-use card properties
-        kwargs['columns'] = ['Sel', 'Name', 'Cost', 'Set', 'Rarity']
+        kwargs['columns'] = ['Sel', 'Name', 'Cost', 'Set', 'Rarity', 'MV',
+            'Color', 'Released']
         super().__init__(*args, **kwargs)
         self.fpath = fpath
         # Needs a name member for certain operations, based on the file path,
@@ -28,6 +29,8 @@ class Collection(pd.DataFrame):
         else: self.name = "Unnamed"
         # set column indicating selection status to False
         self.Sel = False
+        # set any blank values to an empty string
+        self.fillna("", inplace=True)
         
     # Editing Functionality ===================================================
     def copy_selected(self):
@@ -97,18 +100,3 @@ class Collection(pd.DataFrame):
 if __name__ == "__main__":
     
     test = Collection.from_file("Library/SampleCollection.csv")
-    
-#    s = test["Rarity"]
-#    
-#    def rar(r):
-#        codes = {"C":0, "U":1, "R":2, "M":3}
-#        return r.map(codes)
-#        
-#    test.sort_values(["Rarity"], key=rar, ascending=False)
-        
-    
-#    test.iloc[3:7,0]=True
-#    test2 = test.copy_selected()
-#    test.drop_selected()
-#    test3 = Collection.from_search("t:ouphe")
-#    test3.save(fpath="Library/Ouphe.csv")

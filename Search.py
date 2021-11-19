@@ -22,7 +22,8 @@ class ScryfallPortal:
         data = pd.DataFrame.from_dict(data)
         # Retrieve and rename the columns expected by the collection object.
         scrynames = {'name':'Name', 'mana_cost':'Cost', 'set':'Set',
-            'rarity':'Rarity'}
+            'rarity':'Rarity', 'cmc':'MV', 'colors':'Color',
+            'released_at':'Released'}
         data = data[list(scrynames.keys())]
         data.rename(columns=scrynames, inplace=True)
         # Rarity column needs to be remapped to one-letter codes
@@ -30,6 +31,14 @@ class ScryfallPortal:
         data.replace({'Rarity':rarities}, inplace=True)
         # Set abbreviations should be capatalized
         data['Set'] = data['Set'].apply(str.upper)
+        # Mana value should be an integer
+        data['MV'] = data['MV'].apply(int)
+        # Colors should be sorted and joined into a string
+        color_order = {'W':0, 'U':1, 'B':2, 'R':3, 'G':4}
+        def sort_join_colors(colors):
+            colors.sort(key=(lambda c: color_order[c]))
+            return "".join(colors)
+        data["Color"] = data['Color'].apply(sort_join_colors)
         return data
     def request(self, uri, **kwargs):
         """Makes a request from Scryfall's API at the specified uri, and
@@ -63,5 +72,5 @@ class ScryfallPortal:
         
 if __name__ == '__main__':
     
-    portal = Scryfall()
+    portal = ScryfallPortal()
     test = portal.search('!"Intet, the Dreamer" unique:prints')

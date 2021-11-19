@@ -1,12 +1,12 @@
-Name;Cost;Set;Rarity
-Duress;{B};STA;U
-Duress;{B};M21;C
-Mindslicer;{2}{B}{B};9ED;R
-Needle Storm;{2}{G};TMP;U
-Rule of Law;{2}{W};MRD;R
-Time Warp;{3}{U}{U};M10;M
-Arcum's Astrolabe;{S};MH1;C
-Runes of the Deus;{4}{R/G};SHM;C
-Kozilek, the Great Distortion;{8}{C}{C};OGW;M
-Gitaxian Probe;{U/P};NPH;C
-Beseech the Queen;{2/B}{2/B}{2/B};HOP;U
+Name;Cost;Set;Rarity;MV;Color;Released
+Duress;{B};MID;C;1;B;2021-09-24
+Duress;{B};MID;C;1;B;2021-09-24
+Mindslicer;{2}{B}{B};9ED;R;4;B;2005-07-29
+Needle Storm;{2}{G};TPR;U;3;G;2015-05-06
+Rule of Law;{2}{W};M20;U;3;W;2019-07-12
+Time Warp;{3}{U}{U};TPR;M;5;U;2015-05-06
+Arcum's Astrolabe;{S};MH1;C;1;;2019-06-14
+Runes of the Deus;{4}{R/G};SHM;C;5;RG;2008-05-02
+Kozilek, the Great Distortion;{8}{C}{C};OGW;M;10;;2016-01-22
+Gitaxian Probe;{U/P};NPH;C;1;U;2011-05-13
+Beseech the Queen;{2/B}{2/B}{2/B};HOP;U;6;B;2009-09-04
