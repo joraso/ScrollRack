@@ -44,7 +44,16 @@ class Collection(pd.DataFrame):
     def sort_by(self, column, ascending=True):
         """Sorts the Collection in place by the (single) specified card
         property."""
-        self.sort_values([column], ascending=ascending, inplace=True)
+        # define key functions for columns with special sorting rules
+        def rarity_key(column):
+            codes = {"C":0, "U":1, "R":2, "M":3}; return column.map(codes)
+        # the default key function is no transformation
+        key = lambda x: x
+        # set keys for columns with special sorting rules
+        if column=="Rarity": key=rarity_key
+        # finally, perform the sorting:
+        self.sort_values([column], ascending=ascending, inplace=True, key=key)
+        self.reset_index(drop=True, inplace=True)
         
     # Save/load functionality =================================================
     def save(self, fpath=None):
@@ -88,6 +97,16 @@ class Collection(pd.DataFrame):
 if __name__ == "__main__":
     
     test = Collection.from_file("Library/SampleCollection.csv")
+    
+#    s = test["Rarity"]
+#    
+#    def rar(r):
+#        codes = {"C":0, "U":1, "R":2, "M":3}
+#        return r.map(codes)
+#        
+#    test.sort_values(["Rarity"], key=rar, ascending=False)
+        
+    
 #    test.iloc[3:7,0]=True
 #    test2 = test.copy_selected()
 #    test.drop_selected()
