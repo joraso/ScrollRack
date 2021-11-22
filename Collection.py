@@ -47,13 +47,25 @@ class Collection(pd.DataFrame):
     def sort_by(self, column, ascending=True):
         """Sorts the Collection in place by the (single) specified card
         property."""
-        if column == "Set": # Sorting by set = sorting by release date
+        elif column == "Set": # Sorting by set = sorting by release date
             self.sort_values(["Released"], ascending=ascending, inplace=True)
-        if column == "Rarity": # Sorting by rarity requires a key
+        elif column == "Rarity": # Sorting by rarity requires a key
             def rarity_key(column):
                 codes = {"C":0, "U":1, "R":2, "M":3}; return column.map(codes)
             self.sort_values([column], ascending=ascending, inplace=True,
                              key=rarity_key)
+        elif column == "Color": # Sorting by color requires a key
+            def color_key(column):
+                color_modifier = {'':0, 'W':0.01, 'U':0.02, 'B':0.03, 'R':0.04,
+                    'G':0.05, 'WU':0.10, 'WB':0.11, 'UB':0.12, 'UR':0.13,
+                    'BR':0.14, 'BG':0.15, 'RG':0.16, 'WR':0.17, 'WG':0.18,
+                    'UG':0.19, 'WUB':0.20, 'WUR':0.21, 'UBR':0.22, 'UBG':0.23,
+                    'BRG':0.24, 'WBR':0.25, 'WRG':0.26, 'URG':0.27, 'WUG':0.28,
+                    'WBG':0.29, 'WUBR':0.30, 'UBRG':0.31, 'WBRG':0.32,
+                    'WURG':0.33, 'WUBG':0.34, 'WUBRG':0.40}
+                return column.map(color_modifier)
+            self.sort_values([column], ascending=ascending, inplace=True,
+                             key=color_key)
         else: # Default to normal sorting for undefined columns
             self.sort_values([column], ascending=ascending, inplace=True)
         self.reset_index(drop=True, inplace=True)
