@@ -47,15 +47,15 @@ class Collection(pd.DataFrame):
     def sort_by(self, column, ascending=True):
         """Sorts the Collection in place by the (single) specified card
         property."""
-        # define key functions for columns with special sorting rules
-        def rarity_key(column):
-            codes = {"C":0, "U":1, "R":2, "M":3}; return column.map(codes)
-        # the default key function is no transformation
-        key = lambda x: x
-        # set keys for columns with special sorting rules
-        if column=="Rarity": key=rarity_key
-        # finally, perform the sorting:
-        self.sort_values([column], ascending=ascending, inplace=True, key=key)
+        if column == "Set": # Sorting by set = sorting by release date
+            self.sort_values(["Released"], ascending=ascending, inplace=True)
+        if column == "Rarity": # Sorting by rarity requires a key
+            def rarity_key(column):
+                codes = {"C":0, "U":1, "R":2, "M":3}; return column.map(codes)
+            self.sort_values([column], ascending=ascending, inplace=True,
+                             key=rarity_key)
+        else: # Default to normal sorting for undefined columns
+            self.sort_values([column], ascending=ascending, inplace=True)
         self.reset_index(drop=True, inplace=True)
         
     # Save/load functionality =================================================
