@@ -68,6 +68,13 @@ class CollectionModel(QtCore.QAbstractTableModel):
             return True
         return False
             
+    # Other re-implemented functions ==========================================
+    def sort(self, column, order):
+        ascending = True if order==QtCore.Qt.AscendingOrder else False
+        column_name = self.collection.columns[column]
+        self.collection.sort_by(column_name, ascending=ascending)  
+        self.layoutChanged.emit()        
+            
     # Nonstandard functions ===================================================
     def parseManaCost(self, index, symbol_size=15):
         """Retrieves the mana cost from the card at (index) and returns a
@@ -93,7 +100,8 @@ class CollectionModel(QtCore.QAbstractTableModel):
 class CollectionView(QtWidgets.QTableView):
     """The view object for GUI interface with a model/collection."""
     # Class variable that dictates the appropriate width of columns
-    columnWidths = {"Sel":22, "Name":200, "Cost":60, "Set":50, "Rarity":50}
+    columnWidths = {"Sel":22, "Name":200, "Cost":60, "Set":50, "Rarity":50,
+                    "MV":50, "Color":50, "Released":100}
     def __init__(self, collection, *args, fname=None, **kwargs):
         super().__init__(*args, **kwargs)
         # create and set the collection model.
@@ -109,6 +117,8 @@ class CollectionView(QtWidgets.QTableView):
                 self.setColumnWidth(c, self.columnWidths[columns[c]])
         # Connect the on-click functionality
         self.clicked.connect(self.onClick)
+        # Set the columns to sort on click
+        self.setSortingEnabled(True)
     def onClick(self):
         """Defines what happens when the table is clicked."""
         index = self.selectionModel().currentIndex()
