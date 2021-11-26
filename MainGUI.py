@@ -156,16 +156,21 @@ class MainWindow(QtWidgets.QMainWindow):
         dropIcon = QtGui.QIcon('images/icons/delete-bin-2-line.png')
         copyIcon = QtGui.QIcon('images/icons/file-copy-2-line.png')
         moveIcon = QtGui.QIcon('images/icons/arrow-right-circle-line.png')
-        # Add simple button items Open/Save/New/Scryfall
+        # Add button items for Open/New/Scryfall
         self.toolbar.addAction(openIcon, "Open", self.openTab)
         self.toolbar.addAction(newIcon, "New", self.newTab)
         self.toolbar.addAction(scryIcon, "Scryfall", lambda:
             self.searchbar.setHidden(False))
-        self.toolbar.addAction(saveIcon, "Save", self.saveTab)
-        self.toolbar.addAction("Save as", self.saveAsTab)
+        # Add a dropdown to save/save as
+        self.saveMenu = QtWidgets.QMenu("Save")
+        self.saveMenu.addAction("Save", self.saveTab)
+        self.saveMenu.addAction("Save as", self.saveAsTab)
+        self.saveMenu.menuAction().setIcon(saveIcon)
+        self.toolbar.addAction(self.saveMenu.menuAction())
+        # Next section is editing functions
         self.toolbar.addSeparator()
         self.toolbar.addAction(dropIcon, "Drop", self.dropSelected)
-        # Adding the dropdown menu for 'Copy To' and 'Move To'
+        # Add dropdown menu for 'Copy To' and 'Move To'
         self.copytoMenu = QtWidgets.QMenu("Copy To")
         self.copytoMenu.aboutToShow.connect(self.generateCopyToMenu)
         self.copytoMenu.menuAction().setIcon(copyIcon)
