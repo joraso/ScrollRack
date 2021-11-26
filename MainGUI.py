@@ -148,12 +148,14 @@ class MainWindow(QtWidgets.QMainWindow):
     def generateToolBar(self):
         """Initializes the toolbar at the top of the window."""
         self.toolbar = QtWidgets.QToolBar()
-        # Pull icons all the icons
+        # Pull all the icons
         openIcon = QtGui.QIcon('images/icons/folder-open-line.png')
         newIcon = QtGui.QIcon('images/icons/file-line.png')
         scryIcon = QtGui.QIcon('images/icons/contrast-2-line-rotated.png')
         saveIcon = QtGui.QIcon('images/icons/save-2-line.png')
         dropIcon = QtGui.QIcon('images/icons/delete-bin-2-line.png')
+        copyIcon = QtGui.QIcon('images/icons/file-copy-2-line.png')
+        moveIcon = QtGui.QIcon('images/icons/arrow-right-circle-line.png')
         # Add simple button items Open/Save/New/Scryfall
         self.toolbar.addAction(openIcon, "Open", self.openTab)
         self.toolbar.addAction(newIcon, "New", self.newTab)
@@ -166,9 +168,11 @@ class MainWindow(QtWidgets.QMainWindow):
         # Adding the dropdown menu for 'Copy To' and 'Move To'
         self.copytoMenu = QtWidgets.QMenu("Copy To")
         self.copytoMenu.aboutToShow.connect(self.generateCopyToMenu)
+        self.copytoMenu.menuAction().setIcon(copyIcon)
         self.toolbar.addAction(self.copytoMenu.menuAction())
         self.movetoMenu = QtWidgets.QMenu("Move To")
         self.movetoMenu.aboutToShow.connect(self.generateMoveToMenu)
+        self.movetoMenu.menuAction().setIcon(moveIcon)
         self.toolbar.addAction(self.movetoMenu.menuAction())
         # Add the toolbar to the main window
         self.addToolBar(self.toolbar)
