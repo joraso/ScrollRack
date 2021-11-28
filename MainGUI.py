@@ -141,43 +141,45 @@ class MainWindow(QtWidgets.QMainWindow):
         self.tabs.setTabsClosable(True)
         self.tabs.tabCloseRequested.connect(self.closeTab)
         self.setCentralWidget(self.tabs)
-        # Add the top tool bar.
+        # Add the top tool bar and search bar.
         self.generateToolBar(); self.generateSearchBar()
+    
+    # Multi-use functionalities ===============================================
+    def getIcon(self, actionText):
+        """Returns the icon associated with a given action text."""
+        icons = {"Open":'folder-open-line', "New":'file-line',
+                 "Scryfall":'contrast-2-line-rotated', "Save":'save-2-line',
+                 "Drop":'delete-bin-2-line', "Copy To":'file-copy-2-line',
+                 "Move To":'arrow-right-circle-line'}
+        if actionText not in icons.keys(): print("Oopps")
+        else: return QtGui.QIcon(f'images/icons/{icons[actionText]}.png')
     
     # Toolbar and Searchbar generators ========================================
     def generateToolBar(self):
         """Initializes the toolbar at the top of the window."""
         self.toolbar = QtWidgets.QToolBar()
-        # Pull all the icons
-        openIcon = QtGui.QIcon('images/icons/folder-open-line.png')
-        newIcon = QtGui.QIcon('images/icons/file-line.png')
-        scryIcon = QtGui.QIcon('images/icons/contrast-2-line-rotated.png')
-        saveIcon = QtGui.QIcon('images/icons/save-2-line.png')
-        dropIcon = QtGui.QIcon('images/icons/delete-bin-2-line.png')
-        copyIcon = QtGui.QIcon('images/icons/file-copy-2-line.png')
-        moveIcon = QtGui.QIcon('images/icons/arrow-right-circle-line.png')
-        # Add button items for Open/New/Scryfall
-        self.toolbar.addAction(openIcon, "Open", self.openTab)
-        self.toolbar.addAction(newIcon, "New", self.newTab)
-        self.toolbar.addAction(scryIcon, "Scryfall", lambda:
+        # Add button items for New/Open/Scryfall
+        self.toolbar.addAction(self.getIcon("New"), "New", self.newTab)
+        self.toolbar.addAction(self.getIcon("Open"), "Open", self.openTab)
+        self.toolbar.addAction(self.getIcon("Scryfall"), "Scryfall", lambda:
             self.searchbar.setHidden(False))
         # Add a dropdown to save/save as
         self.saveMenu = QtWidgets.QMenu("Save")
         self.saveMenu.addAction("Save", self.saveTab)
         self.saveMenu.addAction("Save as", self.saveAsTab)
-        self.saveMenu.menuAction().setIcon(saveIcon)
+        self.saveMenu.menuAction().setIcon(self.getIcon("Save"))
         self.toolbar.addAction(self.saveMenu.menuAction())
         # Next section is editing functions
         self.toolbar.addSeparator()
-        self.toolbar.addAction(dropIcon, "Drop", self.dropSelected)
+        self.toolbar.addAction(self.getIcon("Drop"), "Drop", self.dropSelected)
         # Add dropdown menu for 'Copy To' and 'Move To'
         self.copytoMenu = QtWidgets.QMenu("Copy To")
         self.copytoMenu.aboutToShow.connect(self.generateCopyToMenu)
-        self.copytoMenu.menuAction().setIcon(copyIcon)
+        self.copytoMenu.menuAction().setIcon(self.getIcon("Copy To"))
         self.toolbar.addAction(self.copytoMenu.menuAction())
         self.movetoMenu = QtWidgets.QMenu("Move To")
         self.movetoMenu.aboutToShow.connect(self.generateMoveToMenu)
-        self.movetoMenu.menuAction().setIcon(moveIcon)
+        self.movetoMenu.menuAction().setIcon(self.getIcon("Move To"))
         self.toolbar.addAction(self.movetoMenu.menuAction())
         # Add the toolbar to the main window
         self.addToolBar(self.toolbar)
