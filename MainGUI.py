@@ -272,14 +272,19 @@ class MainWindow(QtWidgets.QMainWindow):
                 # Update the view of both models
                 dest.layoutChanged.emit(); source.layoutChanged.emit()
             return copyto
+        def copyto_new():
+            # Function that copies selected cards to a new tab
+            self.newTab(); generate_copyto(self.tabs.count()-1)()
         # Iterate through open tabs and add them to the list
         for i in range(self.tabs.count()):
             if i != sourceIndex:
                 tabname = self.tabs.widget(i).model().collection.name
                 self.copytoMenu.addAction(tabname, generate_copyto(i))
         # Copying to the current tab is treated separately
-        self.copytoMenu.addSeparator()
-        self.copytoMenu.addAction("Here", generate_copyto(sourceIndex))
+        if sourceIndex >= 0:
+            self.copytoMenu.addSeparator()
+            self.copytoMenu.addAction("Here", generate_copyto(sourceIndex))
+            self.copytoMenu.addAction("New", copyto_new)
     def generateMoveToMenu(self):
         """Generates/regenerates the dropdown menu of currently open tabs to
         move selected cards to."""
@@ -298,11 +303,17 @@ class MainWindow(QtWidgets.QMainWindow):
                 # Update the view of both models
                 dest.layoutChanged.emit(); source.layoutChanged.emit()
             return moveto
+        def moveto_new():
+            # Function that moves selected cards to a new tab
+            self.newTab(); generate_moveto(self.tabs.count()-1)()
         # Note: 'move to' provides no option to move to the source list
         for i in range(self.tabs.count()):
             if i != sourceIndex:
                 tabname = self.tabs.widget(i).model().collection.name
                 self.movetoMenu.addAction(tabname, generate_moveto(i))
+        if sourceIndex >= 0:
+            self.movetoMenu.addSeparator()
+            self.movetoMenu.addAction("New", moveto_new)
         
         
 if __name__ == '__main__':
