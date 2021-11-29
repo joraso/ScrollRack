@@ -36,7 +36,12 @@ class CollectionModel(QtCore.QAbstractTableModel):
                 else: return QtCore.Qt.Unchecked
         # For all other columns, default to collection content as display role
         elif role==QtCore.Qt.DisplayRole:
-            return str(self.collection.iloc[index.row(), index.column()])        
+            return str(self.collection.iloc[index.row(), index.column()])   
+        # Sel, Name and cost should align left, all others should align center
+        elif role==QtCore.Qt.TextAlignmentRole:
+            if index.column() <= 2:
+                return QtCore.Qt.AlignLeft
+            else: return QtCore.Qt.AlignCenter
     def rowCount(self, index):
         return len(self.collection)
     def columnCount(self, index):
@@ -100,25 +105,26 @@ class CollectionModel(QtCore.QAbstractTableModel):
 class CollectionView(QtWidgets.QTableView):
     """The view object for GUI interface with a model/collection."""
     # Class variable that dictates the appropriate width of columns
-    columnWidths = {"Sel":22, "Name":200, "Cost":60, "Set":50, "Rarity":50,
-                    "MV":50, "Color":50, "Released":100}
-    def __init__(self, collection, *args, fname=None, **kwargs):
+    columnWidths = {"Sel":22, "Name":220, "Cost":80, "Set":50, "Rarity":50,
+                    "MV":50, "Color":60, "Released":100}
+    def __init__(self, collection, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # create and set the collection model.
         self.setModel(CollectionModel(collection))
-        # Set selection behavior to whole rows at a time
+        # Set selection behavior, grid lines (none) & row height
         self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
-        # Set the minimum horizontal section size to small
+        self.setShowGrid(False)
+        self.verticalHeader().setDefaultSectionSize(22)
+        # Configure the top (horizontal) header
         self.horizontalHeader().setMinimumSectionSize(20)
-        # Set the view column widths according to defaults
         columns = self.model().collection.columns
         for c in range(len(columns)):
             if columns[c] in self.columnWidths.keys():
                 self.setColumnWidth(c, self.columnWidths[columns[c]])
-        # Connect the on-click functionality
-        self.clicked.connect(self.onClick)
         # Set the columns to sort on click
         self.setSortingEnabled(True)
+        # Connect the on-click functionality
+        self.clicked.connect(self.onClick)
     def onClick(self):
         """Defines what happens when the table is clicked."""
         index = self.selectionModel().currentIndex()
@@ -228,8 +234,8 @@ class MainWindow(QtWidgets.QMainWindow):
         """Closes a tab."""
         self.tabs.removeTab(currentIndex)
     def saveTab(self):
-        """Saves the currently selected collection to file if it has an an
-        associated file path. Otherwise prompts 'Save As'."""
+        """Saves the currently selected collection to file if it has an
+        associated file path, otherwise prompts 'Save As'."""
         thisTab = self.tabs.currentIndex()
         # Only do something if the focus is currently on a tab
         if thisTab > -1:
