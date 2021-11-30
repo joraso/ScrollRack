@@ -144,6 +144,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setGeometry(100,100,800,500)
         # Setting up the tab space in the central window
         self.tabs = QtWidgets.QTabWidget()
+        self.tabs.setTabShape(QtWidgets.QTabWidget.Triangular)
+        self.tabs.setMovable(True)
         self.tabs.setTabsClosable(True)
         self.tabs.tabCloseRequested.connect(self.closeTab)
         self.setCentralWidget(self.tabs)
@@ -255,7 +257,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 collection.save(fpath_tuple[0])
                 # Update the tab with the newly saved collection name
                 self.tabs.setTabText(thisTab, collection.name)
-        
         
     # Collection editing functionalities ======================================
     def dropSelected(self):
