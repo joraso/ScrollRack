@@ -36,7 +36,12 @@ class CollectionModel(QtCore.QAbstractTableModel):
                 else: return QtCore.Qt.Unchecked
         # For all other columns, default to collection content as display role
         elif role==QtCore.Qt.DisplayRole:
-            return str(self.collection.iloc[index.row(), index.column()])        
+            return str(self.collection.iloc[index.row(), index.column()])   
+        # Sel, Name and cost should align left, all others should align center
+        elif role==QtCore.Qt.TextAlignmentRole:
+            if index.column() <= 2:
+                return QtCore.Qt.AlignLeft
+            else: return QtCore.Qt.AlignCenter
     def rowCount(self, index):
         return len(self.collection)
     def columnCount(self, index):
@@ -100,25 +105,26 @@ class CollectionModel(QtCore.QAbstractTableModel):
 class CollectionView(QtWidgets.QTableView):
     """The view object for GUI interface with a model/collection."""
     # Class variable that dictates the appropriate width of columns
-    columnWidths = {"Sel":22, "Name":200, "Cost":60, "Set":50, "Rarity":50,
-                    "MV":50, "Color":50, "Released":100}
-    def __init__(self, collection, *args, fname=None, **kwargs):
+    columnWidths = {"Sel":22, "Name":220, "Cost":80, "Set":50, "Rarity":50,
+                    "MV":50, "Color":60, "Released":100}
+    def __init__(self, collection, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # create and set the collection model.
         self.setModel(CollectionModel(collection))
-        # Set selection behavior to whole rows at a time
+        # Set selection behavior, grid lines (none) & row height
         self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
-        # Set the minimum horizontal section size to small
+        self.setShowGrid(False)
+        self.verticalHeader().setDefaultSectionSize(22)
+        # Configure the top (horizontal) header
         self.horizontalHeader().setMinimumSectionSize(20)
-        # Set the view column widths according to defaults
         columns = self.model().collection.columns
         for c in range(len(columns)):
             if columns[c] in self.columnWidths.keys():
                 self.setColumnWidth(c, self.columnWidths[columns[c]])
-        # Connect the on-click functionality
-        self.clicked.connect(self.onClick)
         # Set the columns to sort on click
         self.setSortingEnabled(True)
+        # Connect the on-click functionality
+        self.clicked.connect(self.onClick)
     def onClick(self):
         """Defines what happens when the table is clicked."""
         index = self.selectionModel().currentIndex()
@@ -138,31 +144,55 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setGeometry(100,100,800,500)
         # Setting up the tab space in the central window
         self.tabs = QtWidgets.QTabWidget()
+        self.tabs.setTabShape(QtWidgets.QTabWidget.Triangular)
+        self.tabs.setMovable(True)
         self.tabs.setTabsClosable(True)
         self.tabs.tabCloseRequested.connect(self.closeTab)
+        self.tabs.tabBarDoubleClicked.connect(self.renameTab)
         self.setCentralWidget(self.tabs)
-        # Add the top tool bar.
+        # Add the top tool bar and search bar.
         self.generateToolBar(); self.generateSearchBar()
+    
+    # Multi-use functionalities ===============================================
+    def getIcon(self, actionText):
+        """Returns the icon associated with a given action text."""
+        icons = {"Open":'folder-open-line', "New":'file-line',
+                 "Scryfall":'contrast-2-line-rotated', "Save":'save-2-line',
+                 "Drop":'delete-bin-2-line', "Copy To":'file-copy-2-line',
+                 "Move To":'arrow-right-circle-line'}
+        if actionText not in icons.keys(): print("Oopps")
+        else: return QtGui.QIcon(f'images/icons/{icons[actionText]}.png')
     
     # Toolbar and Searchbar generators ========================================
     def generateToolBar(self):
         """Initializes the toolbar at the top of the window."""
         self.toolbar = QtWidgets.QToolBar()
-        # Add simple bottun items Open/Save/New/Scryfall
-        self.toolbar.addAction("Open", self.openTab)
-        self.toolbar.addAction("New", self.newTab)
-        self.toolbar.addAction("Scryfall", lambda:
+        # Add button items for New/Open/Scryfall
+        self.toolbar.addAction(self.getIcon("New"), "New", self.newTab)
+        self.toolbar.addAction(self.getIcon("Open"), "Open", self.openTab)
+        self.toolbar.addAction(self.getIcon("Scryfall"), "Scryfall", lambda:
             self.searchbar.setHidden(False))
-        self.toolbar.addAction("Save", self.saveTab)
-        self.toolbar.addAction("Save as", self.saveAsTab)
+        # Add a dropdown tool button to save/save as
+        saveMenu = QtWidgets.QMenu("Save")
+        saveMenu.addAction("Save", self.saveTab)
+        saveMenu.addAction("Save as", self.saveAsTab)
+        saveButton = QtWidgets.QToolButton()
+        saveButton.setMenu(saveMenu)
+        saveButton.setDefaultAction(saveMenu.actions()[0])
+        saveButton.setIcon(self.getIcon("Save"))
+        saveButton.setPopupMode(QtWidgets.QToolButton.MenuButtonPopup)
+        self.toolbar.addWidget(saveButton)
+        # Next section is editing functions
         self.toolbar.addSeparator()
-        self.toolbar.addAction("Drop", self.dropSelected)
-        # Adding the dropdown menu for 'Copy To' and 'Move To'
+        self.toolbar.addAction(self.getIcon("Drop"), "Drop", self.dropSelected)
+        # Add dropdown menus for 'Copy To' and 'Move To'
         self.copytoMenu = QtWidgets.QMenu("Copy To")
         self.copytoMenu.aboutToShow.connect(self.generateCopyToMenu)
+        self.copytoMenu.menuAction().setIcon(self.getIcon("Copy To"))
         self.toolbar.addAction(self.copytoMenu.menuAction())
         self.movetoMenu = QtWidgets.QMenu("Move To")
         self.movetoMenu.aboutToShow.connect(self.generateMoveToMenu)
+        self.movetoMenu.menuAction().setIcon(self.getIcon("Move To"))
         self.toolbar.addAction(self.movetoMenu.menuAction())
         # Add the toolbar to the main window
         self.addToolBar(self.toolbar)
@@ -211,8 +241,8 @@ class MainWindow(QtWidgets.QMainWindow):
         """Closes a tab."""
         self.tabs.removeTab(currentIndex)
     def saveTab(self):
-        """Saves the currently selected collection to file if it has an an
-        associated file path. Otherwise prompts 'Save As'."""
+        """Saves the currently selected collection to file if it has an
+        associated file path, otherwise prompts 'Save As'."""
         thisTab = self.tabs.currentIndex()
         # Only do something if the focus is currently on a tab
         if thisTab > -1:
@@ -232,7 +262,24 @@ class MainWindow(QtWidgets.QMainWindow):
                 collection.save(fpath_tuple[0])
                 # Update the tab with the newly saved collection name
                 self.tabs.setTabText(thisTab, collection.name)
-        
+    def renameTab(self):
+        """Edits the current collection's name (in the tab bar)."""
+        thisTab = self.tabs.currentIndex()
+        # set up a temorary lineedit widget and replace the tab name with it
+        currentName = win.tabs.widget(0).model().collection.name
+        entrybox = QtWidgets.QLineEdit(currentName)
+        self.tabs.tabBar().setTabButton(thisTab, 0, entrybox)
+        self.tabs.tabBar().setTabText(thisTab, "")
+        # define the rename action connect it to 'editing finished' 
+        def rename():
+            # Rename the collection (and null out it's fpath)
+            newName = entrybox.text()
+            collection = self.tabs.widget(thisTab).model().collection
+            collection.name = newName; collection.fpath = None
+            # then remove the lineedit and push the new name to the tab
+            self.tabs.tabBar().setTabButton(thisTab, 0, None)
+            self.tabs.tabBar().setTabText(thisTab, newName)
+        entrybox.editingFinished.connect(rename)
         
     # Collection editing functionalities ======================================
     def dropSelected(self):
@@ -255,14 +302,19 @@ class MainWindow(QtWidgets.QMainWindow):
                 # Update the view of both models
                 dest.layoutChanged.emit(); source.layoutChanged.emit()
             return copyto
+        def copyto_new():
+            # Function that copies selected cards to a new tab
+            self.newTab(); generate_copyto(self.tabs.count()-1)()
         # Iterate through open tabs and add them to the list
         for i in range(self.tabs.count()):
             if i != sourceIndex:
                 tabname = self.tabs.widget(i).model().collection.name
                 self.copytoMenu.addAction(tabname, generate_copyto(i))
         # Copying to the current tab is treated separately
-        self.copytoMenu.addSeparator()
-        self.copytoMenu.addAction("Here", generate_copyto(sourceIndex))
+        if sourceIndex >= 0:
+            self.copytoMenu.addSeparator()
+            self.copytoMenu.addAction("Here", generate_copyto(sourceIndex))
+            self.copytoMenu.addAction("New", copyto_new)
     def generateMoveToMenu(self):
         """Generates/regenerates the dropdown menu of currently open tabs to
         move selected cards to."""
@@ -281,11 +333,17 @@ class MainWindow(QtWidgets.QMainWindow):
                 # Update the view of both models
                 dest.layoutChanged.emit(); source.layoutChanged.emit()
             return moveto
+        def moveto_new():
+            # Function that moves selected cards to a new tab
+            self.newTab(); generate_moveto(self.tabs.count()-1)()
         # Note: 'move to' provides no option to move to the source list
         for i in range(self.tabs.count()):
             if i != sourceIndex:
                 tabname = self.tabs.widget(i).model().collection.name
                 self.movetoMenu.addAction(tabname, generate_moveto(i))
+        if sourceIndex >= 0:
+            self.movetoMenu.addSeparator()
+            self.movetoMenu.addAction("New", moveto_new)
         
         
 if __name__ == '__main__':
