@@ -148,6 +148,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.tabs.setMovable(True)
         self.tabs.setTabsClosable(True)
         self.tabs.tabCloseRequested.connect(self.closeTab)
+        self.tabs.tabBarDoubleClicked.connect(self.renameTab)
         self.setCentralWidget(self.tabs)
         # Add the top tool bar and search bar.
         self.generateToolBar(); self.generateSearchBar()
@@ -238,6 +239,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def saveTab(self):
         """Saves the currently selected collection to file if it has an
         associated file path, otherwise prompts 'Save As'."""
+        print("We Went Here")
         thisTab = self.tabs.currentIndex()
         # Only do something if the focus is currently on a tab
         if thisTab > -1:
@@ -257,6 +259,24 @@ class MainWindow(QtWidgets.QMainWindow):
                 collection.save(fpath_tuple[0])
                 # Update the tab with the newly saved collection name
                 self.tabs.setTabText(thisTab, collection.name)
+    def renameTab(self):
+        """Edits the current collection's name (in the tab bar)."""
+        thisTab = self.tabs.currentIndex()
+        # set up a temorary lineedit widget and replace the tab name with it
+        currentName = win.tabs.widget(0).model().collection.name
+        entrybox = QtWidgets.QLineEdit(currentName)
+        self.tabs.tabBar().setTabButton(thisTab, 0, entrybox)
+        self.tabs.tabBar().setTabText(thisTab, "")
+        # define the rename action connect it to 'editing finished' 
+        def rename():
+            # Rename the collection (and null out it's fpath)
+            newName = entrybox.text()
+            collection = self.tabs.widget(thisTab).model().collection
+            collection.name = newName; collection.fpath = None
+            # then remove the lineedit and push the new name to the tab
+            self.tabs.tabBar().setTabButton(thisTab, 0, None)
+            self.tabs.tabBar().setTabText(thisTab, newName)
+        entrybox.editingFinished.connect(rename)
         
     # Collection editing functionalities ======================================
     def dropSelected(self):
