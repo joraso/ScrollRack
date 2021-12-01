@@ -172,16 +172,20 @@ class MainWindow(QtWidgets.QMainWindow):
         self.toolbar.addAction(self.getIcon("Open"), "Open", self.openTab)
         self.toolbar.addAction(self.getIcon("Scryfall"), "Scryfall", lambda:
             self.searchbar.setHidden(False))
-        # Add a dropdown to save/save as
-        self.saveMenu = QtWidgets.QMenu("Save")
-        self.saveMenu.addAction("Save", self.saveTab)
-        self.saveMenu.addAction("Save as", self.saveAsTab)
-        self.saveMenu.menuAction().setIcon(self.getIcon("Save"))
-        self.toolbar.addAction(self.saveMenu.menuAction())
+        # Add a dropdown tool button to save/save as
+        saveMenu = QtWidgets.QMenu("Save")
+        saveMenu.addAction("Save", self.saveTab)
+        saveMenu.addAction("Save as", self.saveAsTab)
+        saveButton = QtWidgets.QToolButton()
+        saveButton.setMenu(saveMenu)
+        saveButton.setDefaultAction(saveMenu.actions()[0])
+        saveButton.setIcon(self.getIcon("Save"))
+        saveButton.setPopupMode(QtWidgets.QToolButton.MenuButtonPopup)
+        self.toolbar.addWidget(saveButton)
         # Next section is editing functions
         self.toolbar.addSeparator()
         self.toolbar.addAction(self.getIcon("Drop"), "Drop", self.dropSelected)
-        # Add dropdown menu for 'Copy To' and 'Move To'
+        # Add dropdown menus for 'Copy To' and 'Move To'
         self.copytoMenu = QtWidgets.QMenu("Copy To")
         self.copytoMenu.aboutToShow.connect(self.generateCopyToMenu)
         self.copytoMenu.menuAction().setIcon(self.getIcon("Copy To"))
@@ -239,7 +243,6 @@ class MainWindow(QtWidgets.QMainWindow):
     def saveTab(self):
         """Saves the currently selected collection to file if it has an
         associated file path, otherwise prompts 'Save As'."""
-        print("We Went Here")
         thisTab = self.tabs.currentIndex()
         # Only do something if the focus is currently on a tab
         if thisTab > -1:
