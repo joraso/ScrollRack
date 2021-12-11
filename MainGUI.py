@@ -86,6 +86,7 @@ class CollectionModel(QtCore.QAbstractTableModel):
         QImage of the cost to display."""
         # Retriving and parsing the mana cost string into a list of filenames
         cost_string = self.collection.iloc[index.row(), self.manacolumn]
+        cost_string = cost_string.replace(' // ','{slash}')
         cost_string = cost_string.replace('/','') # for hybrid/phyrex. mana
         symbols = cost_string[1:-1].split('}{')
         # Generate the cost image and painter object
@@ -93,11 +94,16 @@ class CollectionModel(QtCore.QAbstractTableModel):
         image = QtGui.QImage(symbol_size*len(symbols), symbol_size, imgformat)
         image.fill(0) # Fills in a white background
         painter = QtGui.QPainter(image); loc=0
+        # Retrieve and set the font (for inserting slashes)
+        f = painter.font(); f.setPixelSize(symbol_size); painter.setFont(f)
         # render symbols from their individual files and add them to the image
         for sym in symbols:
-            renderer = QtSvg.QSvgRenderer(f'images/mana-symbols/{sym}.svg')
             area = QtCore.QRectF(loc, 0, symbol_size, symbol_size)
-            renderer.render(painter, area)
+            if sym == 'slash':
+                painter.drawText(area, QtCore.Qt.AlignCenter, '//')
+            else:
+                renderer = QtSvg.QSvgRenderer(f'images/mana-symbols/{sym}.svg')
+                renderer.render(painter, area)
             loc += symbol_size
         return image
         
