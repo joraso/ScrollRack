@@ -101,6 +101,8 @@ class CollectionModel(QtCore.QAbstractTableModel):
             area = QtCore.QRectF(loc, 0, symbol_size, symbol_size)
             if sym == 'slash':
                 painter.drawText(area, QtCore.Qt.AlignCenter, '//')
+            elif sym == '':
+                continue
             else:
                 renderer = QtSvg.QSvgRenderer(f'images/mana-symbols/{sym}.svg')
                 renderer.render(painter, area)
