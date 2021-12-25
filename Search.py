@@ -20,13 +20,28 @@ class ScryfallPortal:
         """Formats a the results of a Scryfall search (a json list of
         dictionaries) into a Collection-compatible DataFrame."""
         data = pd.DataFrame.from_dict(data)
-        # Retrieve and rename the columns expected by the collection object.
+        # Unpack neccessary charactoristics for double-faced cards
+        if 'card_faces' in data.columns:
+            subset = data[data.card_faces.isnull()==False]
+            faces = pd.DataFrame(subset.card_faces.to_list(), index=subset.index)
+            front = pd.json_normalize(faces.loc[:,0]).set_index(faces.index)
+            back = pd.json_normalize(faces.loc[:,1]).set_index(faces.index)
+            # Mana cost (and name) are given for both faces
+            subset.loc[:,'mana_cost'] = (front.loc[:,'mana_cost'] + ' // ' + 
+                back.loc[:,'mana_cost'])
+            # Color (and mana volue) are for the front face only
+            subset.loc[:,'colors'] = front.loc[:,'colors']
+            # These columns need to exist in 'data' if they don't already
+            if 'colors' not in data.columns: data['colors'] = ''
+            if 'mana_cost' not in data.columns: data['mana_cost'] = ''
+            data.update(subset)
+        # Rename the columns expected by the collection object.
         scrynames = {'name':'Name', 'mana_cost':'Cost', 'set':'Set',
             'rarity':'Rarity', 'cmc':'MV', 'colors':'Color',
             'released_at':'Released'}
-        data = data[list(scrynames.keys())]
+        data = data[list(scrynames.keys())].copy()
         data.rename(columns=scrynames, inplace=True)
-        # Rarity column needs to be remapped to one-letter codes
+        # Remap rarity column to one-letter codes
         rarities = {'mythic':'M', 'rare':'R', 'uncommon':'U', 'common':'C'}
         data.replace({'Rarity':rarities}, inplace=True)
         # Set abbreviations should be capatalized
@@ -73,4 +88,6 @@ class ScryfallPortal:
 if __name__ == '__main__':
     
     portal = ScryfallPortal()
-    test = portal.search('!"Intet, the Dreamer" unique:prints')
+#    test = portal.search('!"Intet, the Dreamer" unique:prints')
+    test = portal.search('jadzi')
+    # Note: Cost and name displays as both sides. Color and MV are front face only.
