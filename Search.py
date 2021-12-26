@@ -23,12 +23,17 @@ class ScryfallPortal:
         # Unpack neccessary charactoristics for double-faced cards
         if 'card_faces' in data.columns:
             subset = data[data.card_faces.isnull()==False]
-            faces = pd.DataFrame(subset.card_faces.to_list(), index=subset.index)
+            faces = pd.DataFrame(subset.card_faces.to_list(),
+                index=subset.index)
             front = pd.json_normalize(faces.loc[:,0]).set_index(faces.index)
             back = pd.json_normalize(faces.loc[:,1]).set_index(faces.index)
-            # Mana cost (and name) are given for both faces
-            subset.loc[:,'mana_cost'] = (front.loc[:,'mana_cost'] + ' // ' + 
-                back.loc[:,'mana_cost'])
+            # Mana cost (and name) are given for both faces is both have a
+            # mana cost, otherwise for the front face only
+            subset.loc[back['mana_cost']=='','mana_cost'] = \
+                front.loc[back['mana_cost']=='','mana_cost']
+            subset.loc[back['mana_cost']!='','mana_cost'] = \
+                (front.loc[back['mana_cost']!='','mana_cost'] + ' // ' + 
+                back.loc[back['mana_cost']!='','mana_cost'])
             # Color (and mana volue) are for the front face only
             subset.loc[:,'colors'] = front.loc[:,'colors']
             # These columns need to exist in 'data' if they don't already
@@ -90,7 +95,6 @@ class ScryfallPortal:
 if __name__ == '__main__':
     
     portal = ScryfallPortal()
-    test=portal.search("jkjkjk")
 #    test = portal.search('!"Intet, the Dreamer" unique:prints')
-#    test = portal.search('jadzi')
-    # Note: Cost and name displays as both sides. Color and MV are front face only.
+    test = portal.search('jadzi')
+    test2 = portal.search('huntmaster')
