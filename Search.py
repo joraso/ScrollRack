@@ -71,6 +71,8 @@ class ScryfallPortal:
         ensure that the amount of data pulled does not overload memory."""
         # Pull the first page of search results from the scryfall API:
         js = self.request(self.searchpath, params={'q':query})
+        # escape if the search results are empty, otherwise pull data
+        if 'data' not in js.keys(): return []
         data = js['data']; ncards = len(data)
         # Pull from the next pages in the list while there are more pages AND
         # the maximum number of cards has not been reached:
@@ -88,6 +90,7 @@ class ScryfallPortal:
 if __name__ == '__main__':
     
     portal = ScryfallPortal()
+    test=portal.search("jkjkjk")
 #    test = portal.search('!"Intet, the Dreamer" unique:prints')
-    test = portal.search('jadzi')
+#    test = portal.search('jadzi')
     # Note: Cost and name displays as both sides. Color and MV are front face only.
