@@ -20,26 +20,34 @@ class ScryfallPortal:
         """Formats a the results of a Scryfall search (a json list of
         dictionaries) into a Collection-compatible DataFrame."""
         data = pd.DataFrame.from_dict(data)
-        # Unpack neccessary charactoristics for double-faced cards
-        if 'card_faces' in data.columns:
-            subset = data[data.card_faces.isnull()==False]
+        # These columns need to exist in 'data' if they don't already
+        if 'colors' not in data.columns: data['colors'] = ''
+        if 'mana_cost' not in data.columns: data['mana_cost'] = ''
+        # Unpack neccessary characteristics for double-faced cards
+        if 'modal_dfc' in data.layout.unique():
+            subset = data[data.layout=='modal_dfc']
             faces = pd.DataFrame(subset.card_faces.to_list(),
                 index=subset.index)
             front = pd.json_normalize(faces.loc[:,0]).set_index(faces.index)
             back = pd.json_normalize(faces.loc[:,1]).set_index(faces.index)
-            # Mana cost (and name) are given for both faces is both have a
-            # mana cost, otherwise for the front face only
-            subset.loc[back['mana_cost']=='','mana_cost'] = \
-                front.loc[back['mana_cost']=='','mana_cost']
-            subset.loc[back['mana_cost']!='','mana_cost'] = \
-                (front.loc[back['mana_cost']!='','mana_cost'] + ' // ' + 
-                back.loc[back['mana_cost']!='','mana_cost'])
-            # Color (and mana volue) are for the front face only
+            # Mana cost are given for both faces
+            subset.loc[:,'mana_cost'] = (front.loc[:,'mana_cost'] + ' // ' + 
+                back.loc[:,'mana_cost'])
+            # Set color by the front face only
+            subset.loc[:,'colors'] = front.loc[:,'colors']
+            data.update(subset)
+        if 'transform' in data.layout.unique():
+            subset = data[data.layout=='transform']
+            faces = pd.DataFrame(subset.card_faces.to_list(),
+                index=subset.index)
+            front = pd.json_normalize(faces.loc[:,0]).set_index(faces.index)
+            # Mana cost and color are for the front face only.
+            subset.loc[:,'mana_cost'] = front.loc[:,'mana_cost']
             subset.loc[:,'colors'] = front.loc[:,'colors']
             # These columns need to exist in 'data' if they don't already
             if 'colors' not in data.columns: data['colors'] = ''
             if 'mana_cost' not in data.columns: data['mana_cost'] = ''
-            data.update(subset)
+            data.update(subset)            
         # Rename the columns expected by the collection object.
         scrynames = {'name':'Name', 'mana_cost':'Cost', 'set':'Set',
             'rarity':'Rarity', 'cmc':'MV', 'colors':'Color',
@@ -91,10 +99,13 @@ class ScryfallPortal:
             print("Warning: Some cards were not pulled --- maxcards reached.")
         # Format the restults into to pass to the Collection:
         return self.format_result(data)
+#        return data
         
 if __name__ == '__main__':
     
     portal = ScryfallPortal()
 #    test = portal.search('!"Intet, the Dreamer" unique:prints')
-    test = portal.search('jadzi')
+    test = portal.search('dean')
     test2 = portal.search('huntmaster')
+#    test = portal.search('wishes')
+#    data = pd.DataFrame.from_dict(test2)
