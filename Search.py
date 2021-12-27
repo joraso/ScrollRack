@@ -20,13 +20,41 @@ class ScryfallPortal:
         """Formats a the results of a Scryfall search (a json list of
         dictionaries) into a Collection-compatible DataFrame."""
         data = pd.DataFrame.from_dict(data)
-        # Retrieve and rename the columns expected by the collection object.
+        # These columns need to exist in 'data' if they don't already
+        if 'colors' not in data.columns: data['colors'] = ''
+        if 'mana_cost' not in data.columns: data['mana_cost'] = ''
+        # Unpack neccessary characteristics for double-faced cards
+        if 'modal_dfc' in data.layout.unique():
+            subset = data[data.layout=='modal_dfc']
+            faces = pd.DataFrame(subset.card_faces.to_list(),
+                index=subset.index)
+            front = pd.json_normalize(faces.loc[:,0]).set_index(faces.index)
+            back = pd.json_normalize(faces.loc[:,1]).set_index(faces.index)
+            # Mana cost are given for both faces
+            subset.loc[:,'mana_cost'] = (front.loc[:,'mana_cost'] + ' // ' + 
+                back.loc[:,'mana_cost'])
+            # Set color by the front face only
+            subset.loc[:,'colors'] = front.loc[:,'colors']
+            data.update(subset)
+        if 'transform' in data.layout.unique():
+            subset = data[data.layout=='transform']
+            faces = pd.DataFrame(subset.card_faces.to_list(),
+                index=subset.index)
+            front = pd.json_normalize(faces.loc[:,0]).set_index(faces.index)
+            # Mana cost and color are for the front face only.
+            subset.loc[:,'mana_cost'] = front.loc[:,'mana_cost']
+            subset.loc[:,'colors'] = front.loc[:,'colors']
+            # These columns need to exist in 'data' if they don't already
+            if 'colors' not in data.columns: data['colors'] = ''
+            if 'mana_cost' not in data.columns: data['mana_cost'] = ''
+            data.update(subset)            
+        # Rename the columns expected by the collection object.
         scrynames = {'name':'Name', 'mana_cost':'Cost', 'set':'Set',
             'rarity':'Rarity', 'cmc':'MV', 'colors':'Color',
             'released_at':'Released'}
-        data = data[list(scrynames.keys())]
+        data = data[list(scrynames.keys())].copy()
         data.rename(columns=scrynames, inplace=True)
-        # Rarity column needs to be remapped to one-letter codes
+        # Remap rarity column to one-letter codes
         rarities = {'mythic':'M', 'rare':'R', 'uncommon':'U', 'common':'C'}
         data.replace({'Rarity':rarities}, inplace=True)
         # Set abbreviations should be capatalized
@@ -56,6 +84,8 @@ class ScryfallPortal:
         ensure that the amount of data pulled does not overload memory."""
         # Pull the first page of search results from the scryfall API:
         js = self.request(self.searchpath, params={'q':query})
+        # escape if the search results are empty, otherwise pull data
+        if 'data' not in js.keys(): return []
         data = js['data']; ncards = len(data)
         # Pull from the next pages in the list while there are more pages AND
         # the maximum number of cards has not been reached:
@@ -69,8 +99,13 @@ class ScryfallPortal:
             print("Warning: Some cards were not pulled --- maxcards reached.")
         # Format the restults into to pass to the Collection:
         return self.format_result(data)
+#        return data
         
 if __name__ == '__main__':
     
     portal = ScryfallPortal()
-    test = portal.search('!"Intet, the Dreamer" unique:prints')
+#    test = portal.search('!"Intet, the Dreamer" unique:prints')
+    test = portal.search('dean')
+    test2 = portal.search('huntmaster')
+#    test = portal.search('wishes')
+#    data = pd.DataFrame.from_dict(test2)

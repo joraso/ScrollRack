@@ -1,13 +1,18 @@
 Name;Cost;Set;Rarity;MV;Color;Released
-Duress;{B};MID;C;1;B;2021-09-24
-Duress;{B};MID;C;1;B;2021-09-24
-Mindslicer;{2}{B}{B};9ED;R;4;B;2005-07-29
-Needle Storm;{2}{G};TPR;U;3;G;2015-05-06
-Rule of Law;{2}{W};M20;U;3;W;2019-07-12
-Time Warp;{3}{U}{U};TPR;M;5;U;2015-05-06
+Lotus Bloom;;TSR;R;0;;2021-03-19
 Arcum's Astrolabe;{S};MH1;C;1;;2019-06-14
-Runes of the Deus;{4}{R/G};SHM;C;5;RG;2008-05-02
-Kozilek, the Great Distortion;{8}{C}{C};OGW;M;10;;2016-01-22
 Gitaxian Probe;{U/P};NPH;C;1;U;2011-05-13
-Beseech the Queen;{2/B}{2/B}{2/B};HOP;U;6;B;2009-09-04
+Duress;{B};MID;C;1;B;2021-09-24
+Duress;{B};MID;C;1;B;2021-09-24
+Fae of Wishes // Granted;{1}{U} // {3}{U};ELD;R;2;U;2019-10-04
+Rule of Law;{2}{W};M20;U;3;W;2019-07-12
+Needle Storm;{2}{G};TPR;U;3;G;2015-05-06
+Mindslicer;{2}{B}{B};9ED;R;4;B;2005-07-29
+Fire // Ice;{1}{R} // {1}{U};MH2;R;4;UR;2021-06-18
+Huntmaster of the Fells // Ravager of the Fells;{2}{R}{G};DKA;M;4;RG;2012-02-03
+Time Warp;{3}{U}{U};TPR;M;5;U;2015-05-06
+Runes of the Deus;{4}{R/G};SHM;C;5;RG;2008-05-02
 Horde of Notions;{W}{U}{B}{R}{G};MM2;R;5;WUBRG;2015-05-22
+Beseech the Queen;{2/B}{2/B}{2/B};HOP;U;6;B;2009-09-04
+Jadzi, Oracle of Arcavios // Journey to the Oracle;{6}{U}{U} // {2}{G}{G};STX;M;8;U;2021-04-23
+Kozilek, the Great Distortion;{8}{C}{C};OGW;M;10;;2016-01-22
